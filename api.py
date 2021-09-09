@@ -1,6 +1,9 @@
-from flask import Flask
+from flask import Flask, Response
+
 from flask_restx import Resource, Api, reqparse
 import random
+
+from werkzeug.exceptions import BadHost, BadRequest
 
 app = Flask(__name__)
 api = Api(app)
@@ -37,10 +40,13 @@ class Game(Resource):
             return computer
         
         if choice not in [1,2,3,4,5]:
-            return {"message": "Veuillez entrer un nombre entre 1 et 5 !"}
+            return Response(
+        "Send a number between 1 and 5 !",
+        status=400,
+    )
         else: 
-            user_choice= liste_choices[choice]
-            computer_choice= choice_computer(choice)
+            user_choice= liste_choices[choice-1]
+            computer_choice= choice_computer(choice-1)
             index_computer = liste_choices.index(computer_choice)
 
             result = {0: {1: True, 2: False, 3: True, 4: False },
@@ -49,10 +55,10 @@ class Game(Resource):
             3: {0: False, 1: True, 2: False, 4: True}, 
             4: {0: True, 1: False, 2: True, 3: False} }
 
-            if result[choice][index_computer] == False:
-                return {"message": f"Vous avez joué : {user_choice} et, l'ordinateur a joué : {computer_choice}. Vous avez perdu."}
+            if result[choice-1][index_computer] == False:
+                return {"user": user_choice, "computer": computer_choice, "result": "Vous avez perdu."}
             else:
-                return {"message": f"Vous avez joué : {user_choice} et, l'ordinateur a joué : {computer_choice}. Vous avez gagné !"}
+                return {"user": user_choice, "computer": computer_choice, "result": "Vous avez gagné !"}
     
 
 if __name__ == '__main__':
