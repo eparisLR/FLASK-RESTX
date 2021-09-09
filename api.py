@@ -1,3 +1,4 @@
+from os import stat
 from flask import Flask, Response
 
 from flask_restx import Resource, Api, reqparse
@@ -16,6 +17,8 @@ class Add(Resource):
         return {'value': number+1}
 
 #Cette route permet de retourner la valeur au carré et, pour mon cas j'ai testé de transmettre deux paramètres
+
+
 @api.route('/square')
 @api.doc(params={"int": "Must be an integer", "email": "Must be a string"}, location="query")
 class Square(Resource):
@@ -27,6 +30,8 @@ class Square(Resource):
         return {'value': args['int'] ** 2, 'email': args['email']}
 
 #Cette route prend en paramètre le choix de l'utilisateur sous forme de int et renvoie le message final
+
+stats= {"Pierre": 0, "Papier": 0, "Ciseaux": 0, "Lézard":0, "Spock": 0}
 @api.route('/game/<int:choice>')
 @api.doc(params={"choice": "1: Pierre \n 2: Papier \n 3: Ciseaux \n 4: Lézard \n 5: Spock"})
 class Game(Resource):
@@ -56,9 +61,16 @@ class Game(Resource):
             4: {0: True, 1: False, 2: True, 3: False} }
 
             if result[choice-1][index_computer] == False:
+                stats[computer_choice]+= 1
                 return {"user": user_choice, "computer": computer_choice, "result": "Vous avez perdu."}
             else:
+                stats[user_choice]+= 1
                 return {"user": user_choice, "computer": computer_choice, "result": "Vous avez gagné !"}
+
+@api.route('/stats')
+class Stats(Resource):
+    def get(self):
+        return stats
     
 
 if __name__ == '__main__':
