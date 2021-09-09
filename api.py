@@ -5,20 +5,25 @@ import random
 app = Flask(__name__)
 api = Api(app)
 
+#Cette route va permettre de retourner la valeur +1
 @api.route('/plus_one/<int:number>')
 @api.doc(params={"x": "Must be an integer."})
 class Add(Resource):
     def get(self, number):
         return {'value': number+1}
 
+#Cette route permet de retourner la valeur au carré et, pour mon cas j'ai testé de transmettre deux paramètres
 @api.route('/square')
+@api.doc(params={"int": "Must be an integer", "email": "Must be a string"}, location="query")
 class Square(Resource):
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('int', type=int)
+        parser.add_argument('email', type=str)
         args = parser.parse_args()
-        return {'value': args['int'] ** 2}
+        return {'value': args['int'] ** 2, 'email': args['email']}
 
+#Cette route prend en paramètre le choix de l'utilisateur sous forme de int et renvoie le message final
 @api.route('/game/<int:choice>')
 @api.doc(params={"choice": "1: Pierre \n 2: Papier \n 3: Ciseaux \n 4: Lézard \n 5: Spock"})
 class Game(Resource):
@@ -48,6 +53,7 @@ class Game(Resource):
                 return {"message": f"Vous avez joué : {user_choice} et, l'ordinateur a joué : {computer_choice}. Vous avez perdu."}
             else:
                 return {"message": f"Vous avez joué : {user_choice} et, l'ordinateur a joué : {computer_choice}. Vous avez gagné !"}
+    
 
 if __name__ == '__main__':
     app.run(debug=True)
