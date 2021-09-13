@@ -3,6 +3,8 @@ from flask import Flask, Response
 
 from flask_restx import Resource, Api, reqparse
 import random
+import json
+import os
 
 from werkzeug.exceptions import BadHost, BadRequest
 
@@ -31,7 +33,6 @@ class Square(Resource):
 
 #Cette route prend en paramètre le choix de l'utilisateur sous forme de int et renvoie le message final
 
-stats= {"Pierre": 0, "Papier": 0, "Ciseaux": 0, "Lézard":0, "Spock": 0}
 @api.route('/game/<int:choice>')
 @api.doc(params={"choice": "1: Pierre \n 2: Papier \n 3: Ciseaux \n 4: Lézard \n 5: Spock"})
 class Game(Resource):
@@ -61,16 +62,30 @@ class Game(Resource):
             4: {0: True, 1: False, 2: True, 3: False} }
 
             if result[choice-1][index_computer] == False:
-                stats[computer_choice]+= 1
-                return {"user": user_choice, "computer": computer_choice, "result": "Vous avez perdu."}
+                with open('stats.json') as json_file:
+                    data = json.load(json_file)
+                    data[user_choice] = int(data[user_choice]) + 1
+                    
+                    with open('stats.json', 'w') as json_file:
+                        json.dump(data, json_file)
+                return {"ordinateur" : computer_choice, "user": user_choice, "message": "Vous avez perdu."}
             else:
-                stats[user_choice]+= 1
-                return {"user": user_choice, "computer": computer_choice, "result": "Vous avez gagné !"}
+                with open('stats.json') as json_file:
+                    data = json.load(json_file)
+                    data[user_choice] = int(data[user_choice]) + 1
+                    
+                    with open('stats.json', 'w') as json_file:
+                        json.dump(data, json_file)
+                    
+                return {"ordinateur" : computer_choice, "user": user_choice, "message": "Vous avez gagné !"}
 
 @api.route('/stats')
 class Stats(Resource):
     def get(self):
-        return stats
+        SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
+        json_url = os.path.join(SITE_ROOT,"stats.json")
+        data = json.load(open(json_url))
+        return data
     
 
 if __name__ == '__main__':
